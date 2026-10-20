@@ -127,7 +127,7 @@ public class MainActivity extends Activity {
     }
 
     void download() {
-        if(moved)return;
+        if(stage != 0)return;
         moved=true;
         stage=1;
         base();
@@ -148,87 +148,64 @@ public class MainActivity extends Activity {
     }
 
     void home() {
-        stage=2;
+        stage = 2;
         base();
-        ScrollView scroll=new ScrollView(this);
-        root.addView(scroll,new FrameLayout.LayoutParams(-1,-1));
 
-        LinearLayout page=new LinearLayout(this);
+        LinearLayout page = new LinearLayout(this);
         page.setOrientation(LinearLayout.VERTICAL);
-        page.setPadding(22,28,22,28);
-        scroll.addView(page);
+        page.setPadding(28, 18, 28, 18);
+        page.setBackgroundColor(BG);
+        root.addView(page, new FrameLayout.LayoutParams(-1, -1));
 
-        LinearLayout top=new LinearLayout(this);
+        // Top bar: server status on the left, player count on the right.
+        LinearLayout top = new LinearLayout(this);
+        top.setOrientation(LinearLayout.HORIZONTAL);
         top.setGravity(Gravity.CENTER_VERTICAL);
-        TextView brand=text("EG:SA",27,WHITE,true);
-        top.addView(brand,new LinearLayout.LayoutParams(0,60,1));
-        TextView status=text("● LAUNCHER",12,0xff57D68D,true);
-        top.addView(status);
-        page.addView(top);
+        top.setBackground(shape(CARD, 0, 16));
+        top.setPadding(20, 8, 20, 8);
+        page.addView(top, new LinearLayout.LayoutParams(-1, 58));
 
-        TextView hero=text("EMPIRE\nGAME",39,WHITE,true);
-        hero.setGravity(Gravity.CENTER_VERTICAL);
-        hero.setPadding(20,20,20,20);
-        hero.setBackground(shape(0xff230D13,RED,22));
-        page.addView(hero,new LinearLayout.LayoutParams(-1,190));
+        TextView server = text("SERVER: OFF", 15, 0xffff5968, true);
+        server.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
+        top.addView(server, new LinearLayout.LayoutParams(0, -1, 1));
 
-        addSpace(page,18);
-        page.addView(text("LOS SANTOS • ROLEPLAY",14,MUTED,true));
-        addSpace(page,20);
+        TextView players = text("PLAYERS: 0/50", 15, WHITE, true);
+        players.setGravity(Gravity.CENTER_VERTICAL | Gravity.RIGHT);
+        top.addView(players, new LinearLayout.LayoutParams(0, -1, 1));
 
-        TextView card=text("SERVER STATUS\nNot connected yet",17,WHITE,true);
-        card.setBackground(shape(CARD,0,18));
-        page.addView(card,new LinearLayout.LayoutParams(-1,90));
+        // Main content, centered and without Nickname or PLAY controls.
+        FrameLayout center = new FrameLayout(this);
+        LinearLayout.LayoutParams centerParams =
+            new LinearLayout.LayoutParams(-1, 0, 1);
+        centerParams.topMargin = 14;
+        centerParams.bottomMargin = 8;
+        page.addView(center, centerParams);
 
-        addSpace(page,16);
-        TextView players=text("PLAYERS     -- / 50",14,MUTED,true);
-        players.setBackground(shape(CARD,0,18));
-        page.addView(players,new LinearLayout.LayoutParams(-1,58));
+        LinearLayout content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setGravity(Gravity.CENTER);
+        center.addView(content, new FrameLayout.LayoutParams(-1, -1));
 
-        addSpace(page,22);
-        nickname=new EditText(this);
-        nickname.setSingleLine(true);
-        nickname.setHint("Enter your nickname");
-        nickname.setHintTextColor(MUTED);
-        nickname.setTextColor(WHITE);
-        nickname.setPadding(18,8,18,8);
-        nickname.setBackground(shape(CARD,RED,16));
-        page.addView(nickname,new LinearLayout.LayoutParams(-1,58));
+        ImageView logo = new ImageView(this);
+        logo.setImageResource(R.drawable.empire_logo);
+        logo.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        content.addView(logo, new LinearLayout.LayoutParams(220, 130));
 
-        addSpace(page,14);
-        Button play=button("PLAY",RED);
-        page.addView(play,new LinearLayout.LayoutParams(-1,60));
-        play.setOnClickListener(v->{
-            String name=nickname.getText().toString().trim();
-            if(name.isEmpty()) {
-                nickname.setError("Enter your nickname");
-                nickname.requestFocus();
-                ((InputMethodManager)getSystemService(
-                    Context.INPUT_METHOD_SERVICE)).showSoftInput(
-                    nickname,InputMethodManager.SHOW_IMPLICIT);
-                return;
-            }
-            new AlertDialog.Builder(this)
-                .setTitle("EG:SA")
-                .setMessage("Welcome, "+name+"!\nServer connection will be added later.")
-                .setPositiveButton("OK",null).show();
-        });
+        TextView title = text("EMPIRE GAME", 30, WHITE, true);
+        LinearLayout.LayoutParams titleParams =
+            new LinearLayout.LayoutParams(-1, -2);
+        titleParams.topMargin = 8;
+        content.addView(title, titleParams);
 
-        addSpace(page,18);
-        page.addView(text("NEWS & UPDATES",17,WHITE,true));
-        TextView news=text(
-            "Welcome to EMPIRE GAME.\nLauncher preview version 1.0.0",
-            14,MUTED,false);
-        news.setBackground(shape(CARD,0,16));
-        news.setPadding(12,18,12,18);
-        page.addView(news,new LinearLayout.LayoutParams(-1,95));
+        TextView subtitle = text("EG:SA  •  MOBILE", 13, MUTED, true);
+        content.addView(subtitle);
 
-        addSpace(page,18);
-        page.addView(text("SETTINGS   •   SUPPORT   •   ABOUT",12,MUTED,true));
+        TextView footer = text("SERVER CONNECTION NOT AVAILABLE YET",
+            12, MUTED, true);
+        page.addView(footer, new LinearLayout.LayoutParams(-1, 28));
     }
 
     @Override public void onBackPressed() {
-        if(stage!=2)home();
-        else super.onBackPressed();
+        if(stage==2) super.onBackPressed();
     }
 }
