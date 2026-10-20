@@ -63,7 +63,32 @@ public class MainActivity extends Activity {
         super.onCreate(state);
         getWindow().setStatusBarColor(BG);
         getWindow().setNavigationBarColor(BG);
+        fullscreen();
         intro();
+    }
+
+    void fullscreen() {
+        getWindow().getDecorView().setSystemUiVisibility(
+            View.SYSTEM_UI_FLAG_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+        );
+    }
+
+    class FullscreenVideoView extends VideoView {
+        public FullscreenVideoView(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+            int width = MeasureSpec.getSize(widthMeasureSpec);
+            int height = MeasureSpec.getSize(heightMeasureSpec);
+            setMeasuredDimension(width, height);
+        }
     }
 
     void intro() {
@@ -71,11 +96,13 @@ public class MainActivity extends Activity {
         moved = false;
         base();
 
-        VideoView video = new VideoView(this);
+        FullscreenVideoView video = new FullscreenVideoView(this);
         video.setVideoURI(
             Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.intro)
         );
-        root.addView(video, new FrameLayout.LayoutParams(-1, -1));
+        FrameLayout.LayoutParams videoParams =
+            new FrameLayout.LayoutParams(-1, -1);
+        root.addView(video, videoParams);
 
         TextView skipHint = text("TAP ANYWHERE TO SKIP", 12, WHITE, true);
         skipHint.setBackground(shape(0xaa171920, 0, 24));
@@ -149,60 +176,101 @@ public class MainActivity extends Activity {
 
     void home() {
         stage = 2;
+        fullscreen();
         base();
 
         LinearLayout page = new LinearLayout(this);
         page.setOrientation(LinearLayout.VERTICAL);
-        page.setPadding(28, 18, 28, 18);
+        page.setGravity(Gravity.CENTER_HORIZONTAL);
+        page.setPadding(28, 20, 28, 20);
         page.setBackgroundColor(BG);
         root.addView(page, new FrameLayout.LayoutParams(-1, -1));
 
-        // Top bar: server status on the left, player count on the right.
-        LinearLayout top = new LinearLayout(this);
-        top.setOrientation(LinearLayout.HORIZONTAL);
-        top.setGravity(Gravity.CENTER_VERTICAL);
-        top.setBackground(shape(CARD, 0, 16));
-        top.setPadding(20, 8, 20, 8);
-        page.addView(top, new LinearLayout.LayoutParams(-1, 58));
+        LinearLayout statusBar = new LinearLayout(this);
+        statusBar.setOrientation(LinearLayout.HORIZONTAL);
+        statusBar.setGravity(Gravity.CENTER_VERTICAL);
+        statusBar.setPadding(18, 0, 18, 0);
+        statusBar.setBackground(shape(CARD, 0, 14));
+        page.addView(statusBar, new LinearLayout.LayoutParams(-1, 54));
 
-        TextView server = text("SERVER: OFF", 15, 0xffff5968, true);
+        TextView server = text("SERVER: OFF", 14, 0xffff5968, true);
         server.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
-        top.addView(server, new LinearLayout.LayoutParams(0, -1, 1));
+        statusBar.addView(server, new LinearLayout.LayoutParams(0, -1, 1));
 
-        TextView players = text("PLAYERS: 0/50", 15, WHITE, true);
+        TextView players = text("PLAYERS: 0/50", 14, WHITE, true);
         players.setGravity(Gravity.CENTER_VERTICAL | Gravity.RIGHT);
-        top.addView(players, new LinearLayout.LayoutParams(0, -1, 1));
+        statusBar.addView(players, new LinearLayout.LayoutParams(0, -1, 1));
 
-        // Main content, centered and without Nickname or PLAY controls.
-        FrameLayout center = new FrameLayout(this);
-        LinearLayout.LayoutParams centerParams =
+        FrameLayout middle = new FrameLayout(this);
+        LinearLayout.LayoutParams middleParams =
             new LinearLayout.LayoutParams(-1, 0, 1);
-        centerParams.topMargin = 14;
-        centerParams.bottomMargin = 8;
-        page.addView(center, centerParams);
+        middleParams.topMargin = 12;
+        middleParams.bottomMargin = 12;
+        page.addView(middle, middleParams);
 
-        LinearLayout content = new LinearLayout(this);
-        content.setOrientation(LinearLayout.VERTICAL);
-        content.setGravity(Gravity.CENTER);
-        center.addView(content, new FrameLayout.LayoutParams(-1, -1));
+        LinearLayout center = new LinearLayout(this);
+        center.setOrientation(LinearLayout.VERTICAL);
+        center.setGravity(Gravity.CENTER);
+        middle.addView(center, new FrameLayout.LayoutParams(-1, -1));
 
         ImageView logo = new ImageView(this);
         logo.setImageResource(R.drawable.empire_logo);
         logo.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        content.addView(logo, new LinearLayout.LayoutParams(220, 130));
+        center.addView(logo, new LinearLayout.LayoutParams(170, 100));
 
-        TextView title = text("EMPIRE GAME", 30, WHITE, true);
+        TextView title = text("EMPIRE GAME", 27, WHITE, true);
         LinearLayout.LayoutParams titleParams =
             new LinearLayout.LayoutParams(-1, -2);
-        titleParams.topMargin = 8;
-        content.addView(title, titleParams);
+        titleParams.topMargin = 5;
+        center.addView(title, titleParams);
 
-        TextView subtitle = text("EG:SA  •  MOBILE", 13, MUTED, true);
-        content.addView(subtitle);
+        TextView subtitle = text("EG:SA  •  MOBILE", 12, MUTED, true);
+        center.addView(subtitle);
 
-        TextView footer = text("SERVER CONNECTION NOT AVAILABLE YET",
-            12, MUTED, true);
-        page.addView(footer, new LinearLayout.LayoutParams(-1, 28));
+        LinearLayout bottom = new LinearLayout(this);
+        bottom.setOrientation(LinearLayout.VERTICAL);
+        bottom.setPadding(0, 0, 0, 0);
+        page.addView(bottom, new LinearLayout.LayoutParams(-1, -2));
+
+        TextView nickLabel = text("NICKNAME", 12, MUTED, true);
+        nickLabel.setGravity(Gravity.LEFT | Gravity.CENTER_VERTICAL);
+        bottom.addView(nickLabel, new LinearLayout.LayoutParams(-1, 25));
+
+        nickname = new EditText(this);
+        nickname.setSingleLine(true);
+        nickname.setTextSize(16);
+        nickname.setHint("Enter your nickname");
+        nickname.setHintTextColor(MUTED);
+        nickname.setTextColor(WHITE);
+        nickname.setPadding(16, 0, 16, 0);
+        nickname.setInputType(
+            android.text.InputType.TYPE_CLASS_TEXT
+            | android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+        );
+        nickname.setBackground(shape(CARD, 0xff454854, 12));
+        bottom.addView(nickname, new LinearLayout.LayoutParams(-1, 50));
+
+        Button play = button("PLAY", RED);
+        LinearLayout.LayoutParams playParams =
+            new LinearLayout.LayoutParams(-1, 54);
+        playParams.topMargin = 10;
+        bottom.addView(play, playParams);
+
+        play.setOnClickListener(v -> {
+            String name = nickname.getText().toString().trim();
+            if (name.isEmpty()) {
+                nickname.setError("Enter your nickname");
+                nickname.requestFocus();
+                return;
+            }
+
+            new AlertDialog.Builder(this)
+                .setTitle("EG:SA")
+                .setMessage("Welcome, " + name
+                    + "!\\nServer: OFFLINE\\nGame connection is not available yet.")
+                .setPositiveButton("OK", null)
+                .show();
+        });
     }
 
     @Override public void onBackPressed() {
