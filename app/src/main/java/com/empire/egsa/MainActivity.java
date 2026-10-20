@@ -276,14 +276,17 @@ public class MainActivity extends Activity {
         bottomParams.topMargin = 18;
         center.addView(bottom, bottomParams);
 
-        TextView nickLabel = text("NICKNAME", 12, MUTED, true);
-        nickLabel.setGravity(Gravity.LEFT | Gravity.CENTER_VERTICAL);
-        bottom.addView(nickLabel, new LinearLayout.LayoutParams(-1, 25));
-
         nickname = new EditText(this);
         nickname.setSingleLine(true);
-        nickname.setTextSize(16);
+        nickname.setTextSize(18);
         nickname.setHint("(Nickname)");
+        nickname.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_DONE);
+        nickname.setFocusable(true);
+        nickname.setFocusableInTouchMode(true);
+        nickname.setInputType(
+            android.text.InputType.TYPE_CLASS_TEXT
+            | android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+        );
         nickname.setTextColor(Color.WHITE);
         nickname.setGravity(Gravity.CENTER);
         nickname.setHintTextColor(MUTED);
@@ -295,12 +298,16 @@ public class MainActivity extends Activity {
         );
         nickname.setBackground(shape(CARD, 0xff454854, 12));
         LinearLayout.LayoutParams nickParams =
-            new LinearLayout.LayoutParams(220, 42);
+            new LinearLayout.LayoutParams(320, 60);
         nickParams.gravity = Gravity.CENTER;
         bottom.addView(nickname, nickParams);
 
         Button play = button("PLAY", RED);
         play.setText("PLAY");
+        play.setAllCaps(true);
+        play.setTextColor(Color.WHITE);
+        play.setTextSize(22);
+        play.setGravity(Gravity.CENTER);
         play.setVisibility(android.view.View.VISIBLE);
         play.setEnabled(true);
         play.setMinWidth(0);
@@ -310,7 +317,7 @@ public class MainActivity extends Activity {
         play.setTextSize(16);
         play.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams playParams =
-            new LinearLayout.LayoutParams(220, 46);
+            new LinearLayout.LayoutParams(440, 92);
         playParams.gravity = Gravity.CENTER;
         playParams.topMargin = 10;
         bottom.addView(play, playParams);
