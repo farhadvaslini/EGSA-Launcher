@@ -166,11 +166,25 @@ public class MainActivity extends Activity {
         ProgressBar p=new ProgressBar(this,null,
             android.R.attr.progressBarStyleHorizontal);
         p.setMax(100);
+        p.setProgress(100);
         p.setProgressTintList(
-            android.content.res.ColorStateList.valueOf(RED));
-        l.addView(p,new LinearLayout.LayoutParams(-1,12));
-        TextView label=text("Launcher UI ready",14,MUTED,false);
-        l.addView(label);
+            android.content.res.ColorStateList.valueOf(Color.WHITE));
+        p.setProgressBackgroundTintList(
+            android.content.res.ColorStateList.valueOf(0xff555555));
+        LinearLayout progressRow = new LinearLayout(this);
+        progressRow.setGravity(Gravity.CENTER);
+        l.addView(progressRow,
+            new LinearLayout.LayoutParams(-1, 24));
+        progressRow.addView(p,
+            new LinearLayout.LayoutParams(150, 15));
+        TextView label=text(
+            "Launcher ready — game data not downloaded",
+            12, WHITE, false);
+        label.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams labelParams =
+            new LinearLayout.LayoutParams(-1, -2);
+        labelParams.topMargin = 8;
+        l.addView(label, labelParams);
         handler.postDelayed(this::home,900);
     }
 
@@ -211,6 +225,7 @@ public class MainActivity extends Activity {
         LinearLayout center = new LinearLayout(this);
         center.setOrientation(LinearLayout.VERTICAL);
         center.setGravity(Gravity.CENTER);
+        center.setPadding(0, 24, 0, 0);
         middle.addView(center, new FrameLayout.LayoutParams(-1, -1));
 
         ImageView logo = new ImageView(this);
@@ -230,7 +245,10 @@ public class MainActivity extends Activity {
         LinearLayout bottom = new LinearLayout(this);
         bottom.setOrientation(LinearLayout.VERTICAL);
         bottom.setPadding(0, 0, 0, 0);
-        page.addView(bottom, new LinearLayout.LayoutParams(-1, -2));
+        LinearLayout.LayoutParams bottomParams =
+            new LinearLayout.LayoutParams(-1, -2);
+        bottomParams.topMargin = 18;
+        center.addView(bottom, bottomParams);
 
         TextView nickLabel = text("NICKNAME", 12, MUTED, true);
         nickLabel.setGravity(Gravity.LEFT | Gravity.CENTER_VERTICAL);
