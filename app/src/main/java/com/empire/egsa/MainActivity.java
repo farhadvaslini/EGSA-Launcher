@@ -10,6 +10,11 @@ import android.view.inputmethod.InputMethodManager;
 import android.content.Context;
 import android.net.Uri;
 import android.widget.*;
+import org.json.JSONObject;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends Activity {
     final int BG=0xff090A0E, RED=0xffF1263D, WHITE=Color.WHITE,
@@ -19,6 +24,14 @@ public class MainActivity extends Activity {
     int stage=0;
     boolean moved=false;
     EditText nickname;
+    TextView serverStatusView, playersStatusView;
+    final ExecutorService statusExecutor = Executors.newSingleThreadExecutor();
+    final Runnable statusRefreshTask = new Runnable() {
+        @Override public void run() {
+            if (stage == 2) refreshServerStatus();
+            handler.postDelayed(this, 15000);
+        }
+    };
 
     GradientDrawable shape(int color,int stroke,int radius) {
         GradientDrawable d=new GradientDrawable();
@@ -214,6 +227,68 @@ public class MainActivity extends Activity {
         handler.postDelayed(this::home, 1600);
     }
 
+    void refreshServerStatus() {
+        statusExecutor.execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL(
+                    "http://85.133.205.240/empire/api.php?action=status");
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+
+                int code = conn.getResponseCode();
+                if (code != 200) throw new Exception("HTTP " + code);
+
+                java.io.InputStream in = conn.getInputStream();
+                java.io.ByteArrayOutputStream out =
+                    new java.io.ByteArrayOutputStream();
+                byte[] buffer = new byte[1024];
+                int n;
+                while ((n = in.read(buffer)) != -1) out.write(buffer, 0, n);
+                in.close();
+
+                JSONObject data = new JSONObject(
+                    new String(out.toByteArray(), java.nio.charset.StandardCharsets.UTF_8));
+
+                boolean success = data.optBoolean("success", false);
+                int online = data.optInt("online", -1);
+                int capacity = data.optInt("capacity", -1);
+
+                runOnUiThread(() -> {
+                    if (stage != 2 || serverStatusView == null ||
+                        playersStatusView == null) return;
+
+                    if (success && online >= 0 && capacity >= 0) {
+                        serverStatusView.setText("SERVER: ON");
+                        serverStatusView.setTextColor(0xff62E69A);
+                        playersStatusView.setText(
+                            "PLAYERS: " + online + "/" + capacity);
+                    } else {
+                        showServerUnavailable();
+                    }
+                });
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    if (stage == 2) showServerUnavailable();
+                });
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
+        });
+    }
+
+    void showServerUnavailable() {
+        if (serverStatusView != null) {
+            serverStatusView.setText("SERVER: UNKNOWN");
+            serverStatusView.setTextColor(0xffff5968);
+        }
+        if (playersStatusView != null) {
+            playersStatusView.setText("PLAYERS: --/--");
+        }
+    }
+
     void home() {
         stage = 2;
         fullscreen();
@@ -233,11 +308,13 @@ public class MainActivity extends Activity {
         statusBar.setBackground(shape(CARD, 0, 14));
         page.addView(statusBar, new LinearLayout.LayoutParams(-1, 54));
 
-        TextView server = text("SERVER: OFF", 14, 0xffff5968, true);
+        serverStatusView = text("SERVER: CHECKING", 14, 0xffff5968, true);
+        TextView server = serverStatusView;
         server.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
         statusBar.addView(server, new LinearLayout.LayoutParams(0, -1, 1));
 
-        TextView players = text("PLAYERS: 0/50", 14, WHITE, true);
+        playersStatusView = text("PLAYERS: --/--", 14, WHITE, true);
+        TextView players = playersStatusView;
         players.setGravity(Gravity.CENTER_VERTICAL | Gravity.RIGHT);
         statusBar.addView(players, new LinearLayout.LayoutParams(0, -1, 1));
 
@@ -321,6 +398,10 @@ public class MainActivity extends Activity {
         playParams.gravity = Gravity.CENTER;
         playParams.topMargin = 10;
         bottom.addView(play, playParams);
+
+        handler.removeCallbacks(statusRefreshTask);
+        refreshServerStatus();
+        handler.postDelayed(statusRefreshTask, 15000);
 
         play.setOnClickListener(v -> {
             String name = nickname.getText().toString().trim();
