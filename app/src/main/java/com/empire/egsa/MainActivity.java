@@ -67,29 +67,52 @@ public class MainActivity extends Activity {
     }
 
     void intro() {
-        stage=0;
-        moved=false;
+        stage = 0;
+        moved = false;
         base();
 
-        LinearLayout l=column();
-        root.addView(l,new FrameLayout.LayoutParams(-1,-1));
+        VideoView video = new VideoView(this);
+        video.setVideoURI(
+            Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.intro)
+        );
+        root.addView(video, new FrameLayout.LayoutParams(-1, -1));
 
-        TextView logo=text("EG",76,RED,true);
-        logo.setBackground(shape(0xff180B10,RED,32));
-        LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(150,150);
-        l.addView(logo,lp);
+        TextView skipHint = text("TAP ANYWHERE TO SKIP", 12, WHITE, true);
+        skipHint.setBackground(shape(0xaa171920, 0, 24));
+        skipHint.setPadding(22, 12, 22, 12);
 
-        addSpace(l,24);
-        l.addView(text("EMPIRE GAME",30,WHITE,true));
-        l.addView(text("EG:SA  •  MOBILE LAUNCHER",13,MUTED,true));
-        addSpace(l,40);
+        FrameLayout.LayoutParams hintParams = new FrameLayout.LayoutParams(
+            -2, -2, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL
+        );
+        hintParams.bottomMargin = 36;
+        root.addView(skipHint, hintParams);
 
-        Button enter=button("ENTER EMPIRE",RED);
-        l.addView(enter,new LinearLayout.LayoutParams(-1,56));
-        l.addView(text("TAP TO CONTINUE",12,MUTED,true));
-        enter.setOnClickListener(v->download());
+        Runnable continueToNext = () -> {
+            if (moved) return;
+            moved = true;
+            video.stopPlayback();
+            download();
+        };
 
-        // Intro video can be added here once video playback is verified.
+        video.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                continueToNext.run();
+            }
+            return true;
+        });
+
+        skipHint.setOnClickListener(v -> continueToNext.run());
+        video.setOnCompletionListener(mp -> continueToNext.run());
+
+        video.setOnErrorListener((mp, what, extra) -> {
+            continueToNext.run();
+            return true;
+        });
+
+        video.setOnPreparedListener(mp -> {
+            mp.setLooping(false);
+            video.start();
+        });
     }
 
     Button button(String title,int color) {
