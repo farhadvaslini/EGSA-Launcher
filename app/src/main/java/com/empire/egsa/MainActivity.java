@@ -154,38 +154,62 @@ public class MainActivity extends Activity {
     }
 
     void download() {
-        if(stage != 0)return;
-        moved=true;
-        stage=1;
+        if (stage != 0) return;
+        moved = true;
+        stage = 1;
         base();
-        LinearLayout l=column();
-        root.addView(l,new FrameLayout.LayoutParams(-1,-1));
-        l.addView(text("EG:SA",24,RED,true));
-        l.addView(text("PREPARING LAUNCHER",18,WHITE,true));
-        addSpace(l,20);
-        ProgressBar p=new ProgressBar(this,null,
-            android.R.attr.progressBarStyleHorizontal);
-        p.setMax(100);
-        p.setProgress(100);
-        p.setProgressTintList(
-            android.content.res.ColorStateList.valueOf(Color.WHITE));
-        p.setProgressBackgroundTintList(
-            android.content.res.ColorStateList.valueOf(0xff555555));
-        LinearLayout progressRow = new LinearLayout(this);
-        progressRow.setGravity(Gravity.CENTER);
-        l.addView(progressRow,
-            new LinearLayout.LayoutParams(-1, 24));
-        progressRow.addView(p,
-            new LinearLayout.LayoutParams(150, 15));
-        TextView label=text(
-            "Launcher ready — game data not downloaded",
-            12, WHITE, false);
-        label.setGravity(Gravity.CENTER);
-        LinearLayout.LayoutParams labelParams =
+
+        LinearLayout page = column();
+        page.setGravity(Gravity.CENTER);
+        page.setPadding(24, 24, 24, 24);
+        root.addView(page, new FrameLayout.LayoutParams(-1, -1));
+
+        TextView logoTitle = text("EG:SA", 34, Color.WHITE, true);
+        logoTitle.setGravity(Gravity.CENTER);
+        page.addView(logoTitle,
+            new LinearLayout.LayoutParams(-1, -2));
+
+        TextView heading = text("LAUNCHER SETUP", 22, RED, true);
+        heading.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams headingParams =
             new LinearLayout.LayoutParams(-1, -2);
-        labelParams.topMargin = 8;
-        l.addView(label, labelParams);
-        handler.postDelayed(this::home,900);
+        headingParams.topMargin = 18;
+        page.addView(heading, headingParams);
+
+        TextView info = text(
+            "Preparing EMPIRE GAME",
+            16, WHITE, false);
+        info.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams infoParams =
+            new LinearLayout.LayoutParams(-1, -2);
+        infoParams.topMargin = 12;
+        page.addView(info, infoParams);
+
+        ProgressBar progress = new ProgressBar(this, null,
+            android.R.attr.progressBarStyleHorizontal);
+        progress.setMax(100);
+        progress.setProgress(100);
+        progress.setProgressTintList(
+            android.content.res.ColorStateList.valueOf(Color.WHITE));
+        progress.setProgressBackgroundTintList(
+            android.content.res.ColorStateList.valueOf(0xff555555));
+
+        LinearLayout.LayoutParams progressParams =
+            new LinearLayout.LayoutParams(150, 15);
+        progressParams.gravity = Gravity.CENTER;
+        progressParams.topMargin = 22;
+        page.addView(progress, progressParams);
+
+        TextView note = text(
+            "Launcher ready",
+            14, WHITE, false);
+        note.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams noteParams =
+            new LinearLayout.LayoutParams(-1, -2);
+        noteParams.topMargin = 12;
+        page.addView(note, noteParams);
+
+        handler.postDelayed(this::home, 1600);
     }
 
     void home() {
@@ -257,7 +281,7 @@ public class MainActivity extends Activity {
         nickname = new EditText(this);
         nickname.setSingleLine(true);
         nickname.setTextSize(16);
-        nickname.setHint("Enter your nickname");
+        nickname.setHint("(Nickname)");
         nickname.setHintTextColor(MUTED);
         nickname.setTextColor(WHITE);
         nickname.setPadding(16, 0, 16, 0);
@@ -269,8 +293,13 @@ public class MainActivity extends Activity {
         bottom.addView(nickname, new LinearLayout.LayoutParams(-1, 50));
 
         Button play = button("PLAY", RED);
+        play.setText("PLAY");
+        play.setTextColor(Color.WHITE);
+        play.setTextSize(16);
+        play.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams playParams =
-            new LinearLayout.LayoutParams(-1, 54);
+            new LinearLayout.LayoutParams(220, 46);
+        playParams.gravity = Gravity.CENTER;
         playParams.topMargin = 10;
         bottom.addView(play, playParams);
 
