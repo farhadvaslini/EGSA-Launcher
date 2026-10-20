@@ -161,7 +161,7 @@ public class MainActivity extends Activity {
 
         LinearLayout page = column();
         page.setGravity(Gravity.CENTER);
-        page.setPadding(24, 24, 24, 24);
+        page.setPadding(0, 24, 0, 24);
         root.addView(page, new FrameLayout.LayoutParams(-1, -1));
 
         TextView logoTitle = text("EG:SA", 34, Color.WHITE, true);
@@ -195,8 +195,10 @@ public class MainActivity extends Activity {
             android.content.res.ColorStateList.valueOf(0xff555555));
 
         LinearLayout.LayoutParams progressParams =
-            new LinearLayout.LayoutParams(150, 15);
+            new LinearLayout.LayoutParams(-1, 50);
         progressParams.gravity = Gravity.CENTER;
+        progressParams.leftMargin = 0;
+        progressParams.rightMargin = 0;
         progressParams.topMargin = 22;
         page.addView(progress, progressParams);
 
@@ -282,6 +284,8 @@ public class MainActivity extends Activity {
         nickname.setSingleLine(true);
         nickname.setTextSize(16);
         nickname.setHint("(Nickname)");
+        nickname.setTextColor(Color.WHITE);
+        nickname.setGravity(Gravity.CENTER);
         nickname.setHintTextColor(MUTED);
         nickname.setTextColor(WHITE);
         nickname.setPadding(16, 0, 16, 0);
@@ -290,10 +294,18 @@ public class MainActivity extends Activity {
             | android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
         );
         nickname.setBackground(shape(CARD, 0xff454854, 12));
-        bottom.addView(nickname, new LinearLayout.LayoutParams(-1, 50));
+        LinearLayout.LayoutParams nickParams =
+            new LinearLayout.LayoutParams(220, 42);
+        nickParams.gravity = Gravity.CENTER;
+        bottom.addView(nickname, nickParams);
 
         Button play = button("PLAY", RED);
         play.setText("PLAY");
+        play.setVisibility(android.view.View.VISIBLE);
+        play.setEnabled(true);
+        play.setMinWidth(0);
+        play.setMinHeight(0);
+        play.setPadding(8, 0, 8, 0);
         play.setTextColor(Color.WHITE);
         play.setTextSize(16);
         play.setGravity(Gravity.CENTER);
